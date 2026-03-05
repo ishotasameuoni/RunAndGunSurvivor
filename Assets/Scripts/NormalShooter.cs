@@ -32,6 +32,10 @@ public class NormalShooter : MonoBehaviour
                 Quaternion.Euler(90, 0, 0)
                 );
 
+            //生成したBulletをBulletsオブジェクトの子供にしてまとめる
+            //Transformはコンポーネントでもよくつかう物なのでmonobehaviorクラスに省略
+            obj.transform.parent = bullets.transform;
+
             //bulletを消費
             bulletManager.ConsumeBullet();
 
@@ -48,6 +52,7 @@ public class NormalShooter : MonoBehaviour
 
     void Start()
     {
-
+        //タグをつける際は完全に名前を一致させる必要がある（大文字小文字）
+        bullets = GameObject.FindGameObjectWithTag("Bullets");
     }
 }
