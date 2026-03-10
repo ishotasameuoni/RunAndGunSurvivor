@@ -16,6 +16,8 @@ public class PlayerRun : MonoBehaviour
 
     CharacterController controller;
     Animator animator;
+    public GameObject animeBody; //アニメータを持っている本体
+    bool isAnime; //リトライ・リザルトのリアクションを発動させたか
 
     Vector3 moveDirection = Vector3.zero; //移動すべき量
     int targetLane; //向かうべきX座標
@@ -63,7 +65,7 @@ public class PlayerRun : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        animator = GetComponent<Animator>();
+        animator =　animeBody.GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -85,7 +87,7 @@ public class PlayerRun : MonoBehaviour
         {
             //x.yを0に固定
             moveDirection.x = 0;
-            moveDirection.y = 0;
+            moveDirection.z = 0;
 
             //recoverTimeをカウントダウン
             recoverTime -= Time.deltaTime;
@@ -180,6 +182,8 @@ public class PlayerRun : MonoBehaviour
     //Playerを硬直させるべきかチェックするメソッド
     private bool IsStun()
     {
+        Debug.Log("スタン発動"+recoverTime);
+        
         return recoverTime > 0.0f || life <= 0;
     }
 
@@ -190,27 +194,39 @@ public class PlayerRun : MonoBehaviour
         if (controller.isGrounded)
         {
             moveDirection.y = speedJump;
+            animator.SetTrigger("jump");
         }
     }
 
     //CharacterControllerComponentが何かとぶつかった時
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
+        Debug.Log("Hit");
         if (IsStun()) return;
 
         //相手がEnemyなら
         if (hit.gameObject.tag == "Enemy")
         {
+            Debug.Log("Enemy");
             LifeDown(); //体力減少
             GetComponent<NormalShooter>().ShootPowerDown(); //銃の威力を減らすメソッド
             recoverTime = StunDuration; //recoverTimeに定数の値をセッティング
 
 
             //体力がなくなったらゲームオーバー
-            if (life <= 0) GameManager.gameState = GameState.gameover;
+            if (life <= 0)
+            {
+                GameManager.gameState = GameState.gameover;
+                if (!isAnime)
+                {
+                    animator.SetTrigger("retry");
+                    isAnime = true;
+                }
+            }
 
             //Destroy(hit.gameObject); //敵を消滅
             hit.gameObject.GetComponent<Wall>().CreateEffect();
+            animator.SetTrigger("damage");
         }
     }
 
@@ -220,6 +236,11 @@ public class PlayerRun : MonoBehaviour
     if (other.gameObject.tag == "Goal")
         {
             GameManager.gameState = GameState.gameclear;
+            if (!isAnime)
+            {
+                animator.SetTrigger("result");
+                isAnime = true;
+            }
         }
     }
 }
