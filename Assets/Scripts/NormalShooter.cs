@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,10 +15,33 @@ public class NormalShooter : MonoBehaviour
 
     GameObject bullets; //生成した弾をまとめるオブジェクト
 
+    const int maxShootPower = 3; //最大威力
+    int shootPower = 1; //現在の威力
+
+    [Header("ソードのスクリプト")]
+    public NormalSword normalSword;
+
     //InputAction(Playerマップ)のAttackアクションがおされたら
     void OnAttack(InputValue value)
     {
-        Shoot();
+        if (normalSword.GetIsSword()) return;
+
+        //クリアまたはゲームオーバーならアクションボタンで次に進める
+        if (GameManager.gameState == GameState.retry)
+        {
+            //staticメソッドなので簡単に呼び出し
+            GameManager.RetryScene();
+        }
+        else if (GameManager.gameState == GameState.result)
+        {   
+            //行き先を自由に編集できるようpublic変数を使っているのでアクションボタンで先に進める
+            GameManager gm = GameObject.FindGameObjectWithTag("GM").GetComponent<GameManager>();
+            gm.NextScene(gm.nextScene);
+        }
+        else //ゲームがプレイ中なら
+        {
+            Shoot();
+        }
     }
 
     void Shoot()
@@ -54,5 +76,29 @@ public class NormalShooter : MonoBehaviour
     {
         //タグをつける際は完全に名前を一致させる必要がある（大文字小文字）
         bullets = GameObject.FindGameObjectWithTag("Bullets");
+    }
+
+    //威力を上げる
+    public void ShootPowerUp()
+    {
+        shootPower++; //威力をあげる
+        if (shootPower > maxShootPower) shootPower = maxShootPower; //最大威力まで抑える
+        GameObject canvas = GameObject.FindGameObjectWithTag("UI");
+        canvas.GetComponent <UIController>().UpdateGun();
+    }
+
+    //威力を下げる
+    public void ShootPowerDown()
+    {
+        shootPower--; //威力を下げる
+        if (shootPower <= 0) shootPower = 1; //最小を1にする
+        GameObject canvas = GameObject.FindGameObjectWithTag("UI");
+        canvas.GetComponent<UIController>().UpdateGun();
+    }
+
+    //現在威力の取得
+    public int GetShootPower()
+    {
+        return shootPower;
     }
 }

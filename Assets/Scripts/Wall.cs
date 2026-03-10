@@ -20,6 +20,9 @@ public class Wall : MonoBehaviour
 
     Coroutine currentDamage; //ダメージコルーチン
 
+    [Header("スコア点数")]
+    public int point = 100;
+
     void Start()
     {
         startPosition = damageBody.transform.localPosition;
@@ -40,23 +43,38 @@ public class Wall : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         if (currentDamage != null) return;
+
         //コルーチン型のcurrentDamageではなくBool型でも成立はする
 
-        //衝突相手が「Bullet」タグを持っていたら
-        if (other.gameObject.tag == "Bullet")
+        //衝突相手が「Bullet」タグまたは「ソード」を持っていたら
+        if (other.gameObject.tag == "Bullet" || other.gameObject.tag == "Sword")
         {
-            currentDamage = StartCoroutine(DamageCol());
+            //相手のタグを取得
+            string tag = other.gameObject.tag;
+
+            currentDamage = StartCoroutine(DamageCol(tag));
             if (life <= 0) //lifeが残っていなければ
             {
+                ScoreManager.ScoreUp(point); //敵撃破でスコアを加算
                 CreateEffect();
             }
         }
     }
 
     //ダメージコルーチン
-    IEnumerator DamageCol()
+    IEnumerator DamageCol(string tag)
     {
-        life--; //体力の減少
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+
+        if (tag == "Bullet")
+        {
+            life -= player.GetComponent<NormalShooter>().GetShootPower();
+        }
+        else if (tag == "Sword")
+        {
+            life -= player.GetComponent<NormalSword>().GetSwordPower();
+        }
+
         yield return new WaitForSeconds(damageTime);
         //コルーチンを発動していたという情報の解除
         currentDamage = null;

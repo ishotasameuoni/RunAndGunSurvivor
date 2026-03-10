@@ -32,8 +32,14 @@ public class PlayerRun : MonoBehaviour
     public float speedJump = 8.0f; //ジャンプ力
     public float accelerationZ = 10.0f; //前進加速力
 
+    [Header("ソードのスクリプト")]
+    public NormalSword normalSword;
+
     void OnMove(InputValue value)
     {
+        //NormalSwordスクリプトのisSword変数をみて攻撃中なら操作不能
+        if (normalSword.GetIsSword()) return;
+
         //入力検知前がインターバル中なら何もしない
         if (resetIntervalCol == null)
         {
@@ -46,6 +52,9 @@ public class PlayerRun : MonoBehaviour
 
     void OnJump(InputValue value)
     {
+        //NormalSwordスクリプトのisSword変数をみて攻撃中なら操作不能
+        if (normalSword.GetIsSword()) return;
+
         //ジャンプボタンを検知したら発動するメソッド
         Jump();
     }
@@ -60,6 +69,8 @@ public class PlayerRun : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.gameState == GameState.stageclear ||
+            GameManager.gameState == GameState.result) return;
         //InputManagerシステム採用の場合
         //if (Input.GetKeyDown("left")) MoveToLeft();
         //if (Input.GetKeyDown("right")) MoveToRight();
@@ -149,11 +160,22 @@ public class PlayerRun : MonoBehaviour
     }
 
     //体力を1回復する
-    public void LifeUp()
+    public void LifeUP()
     {
         life++;
         if (life > DefaultLife) life = DefaultLife;
+        GameObject canvas = GameObject.FindGameObjectWithTag("UI");
+        canvas.GetComponent<UIController>().UpdateLife(Life());
     }
+
+    //体力の減少
+    public void LifeDown()
+    {
+        life--;
+        GameObject canvas = GameObject.FindGameObjectWithTag("UI");
+        canvas.GetComponent<UIController>().UpdateLife(Life());
+    }
+
 
     //Playerを硬直させるべきかチェックするメソッド
     private bool IsStun()
@@ -179,10 +201,25 @@ public class PlayerRun : MonoBehaviour
         //相手がEnemyなら
         if (hit.gameObject.tag == "Enemy")
         {
-            life--; //体力減少
+            LifeDown(); //体力減少
+            GetComponent<NormalShooter>().ShootPowerDown(); //銃の威力を減らすメソッド
             recoverTime = StunDuration; //recoverTimeに定数の値をセッティング
 
-            Destroy(hit.gameObject); //敵を消滅
+
+            //体力がなくなったらゲームオーバー
+            if (life <= 0) GameManager.gameState = GameState.gameover;
+
+            //Destroy(hit.gameObject); //敵を消滅
+            hit.gameObject.GetComponent<Wall>().CreateEffect();
+        }
+    }
+
+    //ゴールに触れたらクリア
+    private void OnTriggerEnter(Collider other)
+    {
+    if (other.gameObject.tag == "Goal")
+        {
+            GameManager.gameState = GameState.gameclear;
         }
     }
 }

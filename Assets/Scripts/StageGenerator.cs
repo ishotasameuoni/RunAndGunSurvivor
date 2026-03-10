@@ -31,7 +31,7 @@ public class StageGenerator : MonoBehaviour
         int charaPositionIndex = (int)(character.position.z / StageChipSize);
 
         //ƒLƒƒƒ‰‚Ì‚¢‚éˆÊ’u*5”Ô–Ú‚ÌˆÊ’u‚ª
-        if (charaPositionIndex * preInstantiate > currentChipIndex)
+        if (charaPositionIndex + preInstantiate > currentChipIndex)
         {
             UpdateStage(charaPositionIndex + preInstantiate);
         }
