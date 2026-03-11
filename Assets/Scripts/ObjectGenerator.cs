@@ -71,14 +71,32 @@ public class ObjectGenerator : MonoBehaviour
 
         //ランダムな生成物と生成レーン番号を取得
         int index = Random.Range(0, enemyObjects.Length);
-        int targetLane = Random.Range(MinLane, MaxLane + 1);
+        int targetLane1 = Random.Range(MinLane, MaxLane + 1);
 
         Instantiate(
             enemyObjects[index],
-            new Vector3(targetLane * LaneWidth, 1, transform.position.z),
-            Quaternion.identity
+            new Vector3(targetLane1 * LaneWidth, 1, transform.position.z),
+            Quaternion.Euler(0,180,0)
             );
-        enemyObjectGenerateCol = null;　//コルーチンの解放
+
+        //ランダムな生成物と生成レーン番号を取得
+        index = Random.Range(0, enemyObjects.Length);
+        int targetLane2 = Random.Range(MinLane, MaxLane + 1);
+
+        //重複したなら、レーン番号が同じ間は何度も繰り返す
+        while (targetLane2 == targetLane1)
+        {
+            targetLane2 = Random.Range(MinLane,MaxLane + 1);
+        }
+
+        Instantiate(
+           enemyObjects[index],
+           new Vector3(targetLane2 * LaneWidth, 1, transform.position.z),
+           Quaternion.Euler(0, 180, 0)
+           );
+
+
+       enemyObjectGenerateCol = null;　//コルーチンの解放
 
     }
 
@@ -129,7 +147,7 @@ public class ObjectGenerator : MonoBehaviour
     //ゴール生成コルーチン
     IEnumerator GoalObjectGenerateCol()
     {
-        yield return new WaitForSeconds(15.0f); //他のオブジェクトの生成があらかた終わるまでまつ
+        yield return new WaitForSeconds(10.0f); //他のオブジェクトの生成があらかた終わるまでまつ
         //ゴールの生成
         Instantiate(
             goalPrefab,

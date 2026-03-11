@@ -209,6 +209,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: vfx_Portal_02
       objectReference: {fileID: 0}
+    - target: {fileID: 3376879974163870529, guid: 31e1448bbc469064e89a752925fc2ea4, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9995573
+      objectReference: {fileID: 0}
+    - target: {fileID: 3376879974163870529, guid: 31e1448bbc469064e89a752925fc2ea4, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.029753467
+      objectReference: {fileID: 0}
+    - target: {fileID: 3376879974163870529, guid: 31e1448bbc469064e89a752925fc2ea4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 3.41
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

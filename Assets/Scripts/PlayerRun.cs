@@ -7,7 +7,7 @@ public class PlayerRun : MonoBehaviour
     //横移動のX軸の限界
     const int MinLane = -2;
     const int MaxLane = 2;
-    const float LaneWidth = 1.0f;
+    const float LaneWidth = 2.0f;
 
     //体力の最大値
     const int DefaultLife = 3;
@@ -36,6 +36,18 @@ public class PlayerRun : MonoBehaviour
 
     [Header("ソードのスクリプト")]
     public NormalSword normalSword;
+
+    AudioSource[] playerAudio;
+    //足音判定
+    float footstepInterval = 0.3f; //足音間隔
+    float footstepTimer; //時間計測
+    [Header("SE音源")]
+    public AudioClip se_Walk;
+    public AudioClip se_Damage;
+    public AudioClip se_Explosion;
+    public AudioClip se_Jump;
+    public AudioClip se_Dash;
+    public AudioClip se_Reload;
 
     void OnMove(InputValue value)
     {
@@ -66,6 +78,7 @@ public class PlayerRun : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         animator =　animeBody.GetComponent<Animator>();
+        playerAudio = GetComponents<AudioSource>();
     }
 
     // Update is called once per frame
@@ -117,6 +130,28 @@ public class PlayerRun : MonoBehaviour
 
         //地面についたら重力をリセットする
         if (controller.isGrounded) moveDirection.y = 0;
+
+        HandleFootsteps();
+    }
+
+    //足音メソッド
+    void HandleFootsteps()
+    {
+        //地面にいてプレイヤーが動いていれば
+        if (controller.isGrounded && moveDirection.z != 0)
+        {
+            footstepTimer += Time.deltaTime; //時間計測
+
+            if (footstepTimer >= footstepInterval) //インターバルチェック
+            {
+                playerAudio[1].PlayOneShot(se_Walk);
+                footstepTimer = 0;
+            }
+        }
+        else //動いていなければ時間計測リセット
+        {
+            footstepTimer = 0f;
+        }
     }
 
     public void MoveToLeft()
@@ -127,6 +162,7 @@ public class PlayerRun : MonoBehaviour
         //地面にいるかつtargetが最小ではないなら
         if (controller.isGrounded && targetLane > MinLane)
         {
+            playerAudio[0].PlayOneShot(se_Dash);
             targetLane--;
             currentMoveInputX = 0; //何も入力していない状況にリセット
                                    //次の入力検知が有効になるまでのインターバルを行う
@@ -142,6 +178,7 @@ public class PlayerRun : MonoBehaviour
         //地面にいるかつtargetが最大ではないなら
         if (controller.isGrounded && targetLane < MaxLane)
         {
+            playerAudio[0].PlayOneShot(se_Dash);
             targetLane++;
             currentMoveInputX = 0; //何も入力していない状況にリセット
                                    //次の入力検知が有効になるまでのインターバルを行う
@@ -182,7 +219,7 @@ public class PlayerRun : MonoBehaviour
     //Playerを硬直させるべきかチェックするメソッド
     private bool IsStun()
     {
-        Debug.Log("スタン発動"+recoverTime);
+        //Debug.Log("スタン発動"+recoverTime);
         
         return recoverTime > 0.0f || life <= 0;
     }
@@ -195,19 +232,21 @@ public class PlayerRun : MonoBehaviour
         {
             moveDirection.y = speedJump;
             animator.SetTrigger("jump");
+            playerAudio[0].PlayOneShot(se_Jump);
         }
     }
 
     //CharacterControllerComponentが何かとぶつかった時
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        Debug.Log("Hit");
+        //Debug.Log("Hit");
         if (IsStun()) return;
 
         //相手がEnemyなら
         if (hit.gameObject.tag == "Enemy")
         {
-            Debug.Log("Enemy");
+            //Debug.Log("Enemy");
+            playerAudio[2].PlayOneShot(se_Damage);
             LifeDown(); //体力減少
             GetComponent<NormalShooter>().ShootPowerDown(); //銃の威力を減らすメソッド
             recoverTime = StunDuration; //recoverTimeに定数の値をセッティング
@@ -234,13 +273,17 @@ public class PlayerRun : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
     if (other.gameObject.tag == "Goal")
+           
         {
-            GameManager.gameState = GameState.gameclear;
+            //Debug.Log("ゴール");
+            GameManager.gameState = GameState.stageclear;
             if (!isAnime)
             {
                 animator.SetTrigger("result");
                 isAnime = true;
+                playerAudio[0].PlayOneShot(se_Reload);
             }
+            Destroy(other.gameObject); //ゴールをしたらゴールオブジェクトを抹消
         }
     }
 }

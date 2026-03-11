@@ -18,6 +18,15 @@ public class BulletManager : MonoBehaviour
     [Header("UIオブジェクト")]
     public UIController ui;
 
+    AudioSource[] playerAudio;
+    [Header("SE音源")]
+    public AudioClip se_Reload;
+
+    void Start()
+    {
+        playerAudio = GetComponents<AudioSource>();
+    }
+
     //弾の消費
     public void ConsumeBullet()
     {
@@ -60,6 +69,7 @@ public class BulletManager : MonoBehaviour
         {
             if (magazine > 0) //マガジンの残数があれば
             {
+                playerAudio[0].PlayOneShot(se_Reload);
                 magazine--; //マガジンを消費]
                 ui.UpdateMagazine(); //UIの更新
 

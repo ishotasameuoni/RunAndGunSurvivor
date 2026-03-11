@@ -120,7 +120,9 @@ public class UIController : MonoBehaviour
             //リザルトパネルの表示
             resultPanel.SetActive(true);
             //ゲームステータスをリザルトに
+            Debug.Log(GameManager.gameState);
             GameManager.gameState = GameState.result;
+            Debug.Log(GameManager.gameState);
         }
         //プレイ中にリロードコルーチンが発生していたら
         else if (reloadEndCol != null)
